@@ -1,0 +1,1013 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#123239">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" sizes="192x192" href="icone-192.png">
+<link rel="apple-touch-icon" href="icone-192.png">
+<title>Côte d'Opale — conditions de surf</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,500&family=Barlow+Semi+Condensed:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --brume:   #DCE4E3;
+    --craie:   #F4F7F6;
+    --ardoise: #123239;
+    --galet:   #6B7F83;
+    --eau:     #B4CBD1;
+    --trait:   #C2CFCE;
+    /* échelle de notes, du plus mauvais au meilleur */
+    --n1: #A6453A;
+    --n2: #C0762A;
+    --n3: #96851B;
+    --n4: #4C8A45;
+    --n5: #1C7A5D;
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+
+  body {
+    margin: 0 auto;
+    padding: 0 0 3rem;
+    background: var(--brume);
+    color: var(--ardoise);
+    font-family: "Barlow Semi Condensed", "Roboto Condensed", system-ui, sans-serif;
+    font-size: 16px;
+    line-height: 1.4;
+    max-width: 46rem;
+  }
+
+  h1, h2 { font-weight: 500; margin: 0; }
+  .marge { padding-inline: 1rem; }
+
+  /* En-tête compact : logo, liens et heure en colonne à gauche, cartes de
+     spot à droite, sur une seule bande. */
+  .barre {
+    display: grid; grid-template-columns: auto minmax(0, 1fr);
+    gap: 0.5rem; align-items: center; padding: 0.7rem 0.8rem 0.5rem;
+  }
+  .identite { display: flex; flex-direction: column; align-items: center; gap: 0.3rem; width: 4.2rem; }
+  .barre h1 { font-family: Fraunces, Georgia, serif; font-size: 1.4rem; margin: 0; }
+  .lapin { display: block; height: 48px; width: 51px; }
+  .maj { color: var(--galet); font-size: 0.7rem; line-height: 1.2; text-align: center; }
+
+  /* Raccourcis vers la bouée, la webcam et Windguru du spot affiché. */
+  .liens { display: flex; gap: 0.4rem; }
+  .liens a {
+    display: block; width: 18px; height: 18px; line-height: 0;
+    opacity: 0.75;
+  }
+  .liens a:hover, .liens a:focus-visible { opacity: 1; }
+  .liens svg { width: 100%; height: 100%; display: block; }
+
+  /* ---- sélecteur de spot : pavillon ---- */
+  .spots {
+    display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0.4rem;
+  }
+  .carte-spot {
+    display: flex; gap: 0.4rem; align-items: stretch;
+    padding: 0.4rem 0.4rem 0.4rem 0; min-width: 0;
+    background: transparent; border: none; cursor: pointer;
+    font: inherit; color: inherit; text-align: left;
+  }
+  .carte-spot[aria-pressed="true"] { background: var(--craie); }
+  .carte-spot:focus-visible { outline: 2px solid var(--ardoise); outline-offset: 2px; }
+  /* Mât de la meilleure session surf : remplissage proportionnel à la
+     note, couleur de l'échelle. */
+  .carte-spot .mats { display: flex; gap: 3px; flex: none; align-self: stretch; }
+  .carte-spot .mat {
+    width: 6px; align-self: stretch; background: var(--trait); position: relative;
+  }
+  .carte-spot .mat i { position: absolute; left: 0; right: 0; bottom: 0; display: block; }
+  .carte-spot .corps { min-width: 0; flex: 1; }
+  .carte-spot .nom {
+    font-family: Fraunces, Georgia, serif; font-size: 1rem;
+    display: block; line-height: 1.15; color: var(--galet); margin-bottom: 0.1rem;
+  }
+  .carte-spot[aria-pressed="true"] .nom { color: var(--ardoise); }
+  .carte-spot .disc {
+    display: flex; align-items: baseline; gap: 0.25rem;
+    font-size: 0.72rem; color: var(--galet); line-height: 1.35;
+    white-space: nowrap; overflow: hidden;
+  }
+  .carte-spot .disc b {
+    font-family: Fraunces, Georgia, serif; font-size: 1.05rem; font-weight: 400;
+    font-variant-numeric: tabular-nums; min-width: 1.4rem;
+  }
+  .carte-spot .disc .qui { width: 1.6rem; flex: none; }
+  .carte-spot .disc span:last-child { overflow: hidden; text-overflow: ellipsis; }
+  .carte-spot .quand {
+    font-size: 0.76rem; color: var(--galet); display: block;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+
+  /* ---- détail du meilleur créneau du spot actif ---- */
+  .phare {
+    padding: 0.3rem 1rem 1rem; border-bottom: 1px solid var(--trait);
+    font-size: 0.88rem; color: var(--galet);
+    font-variant-numeric: tabular-nums;
+  }
+  .phare b { color: var(--ardoise); font-weight: 600; }
+
+  /* ---- journée ---- */
+  .journee { border-bottom: 1px solid var(--trait); padding-bottom: 0.9rem; }
+  .journee h2 { font-size: 1rem; font-weight: 600; padding-top: 1rem; }
+  .apercu {
+    color: var(--galet); font-size: 0.85rem; margin: 0.15rem 0 0.6rem;
+    font-variant-numeric: tabular-nums;
+  }
+  .apercu b { color: var(--ardoise); font-weight: 600; }
+
+  /* ---- tableau horaire ---- */
+  .cadre { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  table { border-collapse: collapse; font-variant-numeric: tabular-nums; }
+  th, td {
+    padding: 0.22rem 0.3rem; text-align: center; font-weight: 400;
+    font-size: 0.84rem; white-space: nowrap; border-bottom: 1px solid #0000000d;
+  }
+  th.libelle {
+    position: sticky; left: 0; z-index: 2;
+    background: var(--brume); text-align: left; color: var(--galet);
+    padding-left: 1rem; padding-right: 0.5rem; font-size: 0.78rem;
+  }
+  tr.heures th { font-weight: 600; font-size: 0.82rem; padding-bottom: 0.35rem; }
+  tr.heures th.libelle { font-weight: 400; }
+  td { min-width: 2.5rem; }
+  .creux { color: var(--galet); }
+
+  /* Cellules à fond coloré : l'intensité se lit à la teinte, comme sur
+     Windguru, mais en pastel pour rester lisible en plein soleil. */
+  td.fond { padding: 1px 2px; }
+  .bloc {
+    display: block; border-radius: 5px; padding: 3px 4px;
+    color: var(--ardoise); line-height: 1.25;
+  }
+  /* AROME et UKV en désaccord : prévision de vent à prendre avec réserve. */
+  .bloc.incertain { outline: 1.5px dashed var(--n2); outline-offset: -2px; }
+  .pointe { font-weight: 600; }
+  tr.separe td, tr.separe th { border-top: 1px solid var(--trait); }
+  .fleche { display: inline-block; font-size: 0.95rem; line-height: 1; }
+  .colonne-top { background: #ffffff5c; }
+  /* Planches conseillées : la première en évidence, la seconde en dessous.
+     Une planche pas encore achetée est en italique, avec un astérisque. */
+  td.planche { font-size: 0.74rem; line-height: 1.15; padding-top: 0.1rem; padding-bottom: 0.15rem; }
+  td.planche .p1 { display: block; font-weight: 600; }
+  td.planche .p2 { display: block; color: var(--galet); }
+  td.planche .absente { font-style: italic; }
+
+  /* Heure « chantier » : mer formée mais hachée. Hachures discrètes derrière
+     le carré : ça se surfe en shortboard si on est motivé. */
+  td.chantier {
+    background: repeating-linear-gradient(135deg, transparent 0 4px,
+                rgba(192, 118, 42, 0.22) 4px 6px);
+  }
+
+  .badge { display: block; margin: 0 auto; }
+
+  /* Barres de marée : hauteur = niveau d'eau, couleur = note de marée. */
+  td.maree { padding: 0 0.3rem 0.1rem; vertical-align: bottom; height: 32px; }
+  .colonne-eau {
+    display: block;          /* un span reste inline : sans ça, la hauteur est ignorée */
+    position: relative; height: 30px; width: 100%; min-width: 2rem;
+    border-bottom: 1px solid var(--trait);
+  }
+  .colonne-eau i {
+    position: absolute; bottom: 0; left: 22%; right: 22%;
+    border-radius: 1px 1px 0 0; display: block;
+  }
+  .niveau { font-size: 0.74rem; color: var(--galet); line-height: 1.5; }
+
+  /* Le courant est un bonus : détaché du bloc noté, en retrait visuel. */
+  tr.bonus th, tr.bonus td {
+    border-top: 2px solid var(--trait); padding-top: 0.35rem;
+    font-size: 0.76rem; color: var(--galet);
+  }
+  tr.bonus th.libelle { font-style: italic; }
+  .alerte-orage {
+    display: flex; gap: 0.6rem; align-items: baseline;
+    margin: 0.3rem 1rem 0.7rem; padding: 0.5rem 0.7rem;
+    background: #A6453A14; border-left: 3px solid var(--n1);
+    font-size: 0.86rem;
+  }
+  .alerte-orage b { color: var(--n1); }
+
+  .pastille {
+    display: inline-block; width: 0.55rem; height: 0.55rem; border-radius: 50%;
+    vertical-align: baseline;
+  }
+
+  /* ---- noter une session ---- */
+  .journal { border-top: 1px solid var(--trait); margin-top: 0.4rem; }
+  .journal > summary {
+    padding: 0.9rem 1rem; cursor: pointer; font-weight: 600; font-size: 0.95rem;
+    list-style: none;
+  }
+  .journal > summary::-webkit-details-marker { display: none; }
+  .journal > summary::before { content: "+ "; color: var(--galet); }
+  .journal[open] > summary::before { content: "– "; }
+  .journal .corps { padding: 0 1rem 1.1rem; }
+  .journal p { margin: 0 0 0.8rem; color: var(--galet); font-size: 0.85rem; }
+  .champs { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.7rem; }
+  .journal label { font-size: 0.78rem; color: var(--galet); display: block; }
+  .journal select, .journal input {
+    font: inherit; font-size: 0.9rem; padding: 0.3rem 0.4rem;
+    background: var(--craie); color: var(--ardoise);
+    border: 1px solid var(--trait); border-radius: 0;
+  }
+  .journal input[type="text"] { width: 100%; }
+  .notes-choix { display: flex; gap: 0.3rem; }
+  .notes-choix button {
+    width: 2.1rem; height: 2.1rem; font: inherit; font-weight: 600;
+    border-radius: 6px;
+    background: var(--craie); color: var(--galet);
+    border: 1px solid var(--trait); cursor: pointer;
+  }
+  .notes-choix button[aria-pressed="true"] { color: #fff; border-color: transparent; }
+  .actions { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;
+             margin-top: 0.9rem; }
+  .actions button, .actions a {
+    font: inherit; font-size: 0.9rem; padding: 0.4rem 0.7rem; cursor: pointer;
+    background: var(--ardoise); color: var(--craie); border: none;
+    text-decoration: none; display: inline-block;
+  }
+  .actions a { background: transparent; color: var(--ardoise);
+               border: 1px solid var(--ardoise); }
+  .actions button[disabled] { opacity: 0.4; cursor: default; }
+  .ligne-csv {
+    font-family: ui-monospace, monospace; font-size: 0.8rem;
+    background: var(--craie); padding: 0.45rem 0.55rem; margin-top: 0.7rem;
+    word-break: break-all; color: var(--galet);
+  }
+  .retour { font-size: 0.82rem; color: var(--n5); }
+
+  footer { padding: 1.2rem 1rem 0; color: var(--galet); font-size: 0.76rem; line-height: 1.5; }
+  footer a { color: var(--galet); }
+  .vide, .erreur { padding: 2.5rem 1rem; color: var(--galet); }
+  .erreur { color: var(--n2); }
+</style>
+</head>
+<body>
+
+<div class="barre">
+  <div class="identite">
+  <h1><svg class="lapin" viewBox="16 18 86 82" role="img" aria-label="Côte d'Opale, conditions de surf"><g transform="translate(-8.3 1.8) scale(1.12)"><path d="M27 78 Q35 74.5 43 78 T59 78 T75 78 T91 78" fill="none" stroke="#123239" stroke-width="1.5" stroke-linecap="round"/><path d="M36 84 Q44 81 52 84 T68 84 T80 84" fill="none" stroke="#123239" stroke-width="1.2" stroke-linecap="round" opacity=".5"/><ellipse cx="60" cy="71.5" rx="36" ry="4" transform="rotate(-4 60 71.5)" fill="#DCE4E3" stroke="#123239" stroke-width="1.5"/><g fill="#123239" stroke="#123239" stroke-width="3"><ellipse cx="63" cy="31" rx="4" ry="12" transform="rotate(-28 63 31)"/></g><g fill="#DCE4E3"><ellipse cx="63" cy="31" rx="4" ry="12" transform="rotate(-28 63 31)"/></g><g fill="#123239" stroke="#123239" stroke-width="3"><ellipse cx="70" cy="30" rx="4.2" ry="12.5" transform="rotate(-14 70 30)"/><ellipse cx="54" cy="56" rx="21" ry="13"/><ellipse cx="73" cy="49" rx="12" ry="10.5"/><ellipse cx="47" cy="67" rx="8" ry="3"/><ellipse cx="70" cy="65.5" rx="4.5" ry="2.6"/></g><g fill="#DCE4E3"><ellipse cx="70" cy="30" rx="4.2" ry="12.5" transform="rotate(-14 70 30)"/><ellipse cx="54" cy="56" rx="21" ry="13"/><ellipse cx="73" cy="49" rx="12" ry="10.5"/><ellipse cx="47" cy="67" rx="8" ry="3"/><ellipse cx="70" cy="65.5" rx="4.5" ry="2.6"/></g><circle cx="77" cy="47" r="1.9" fill="#123239"/><circle cx="84.6" cy="50.3" r="1.2" fill="#123239"/></g></svg></h1>
+    <div class="liens" id="liens"></div>
+    <span class="maj" id="maj"></span>
+  </div>
+  <div class="spots" id="spots"></div>
+</div>
+
+<main id="contenu"><p class="vide">Chargement des conditions…</p></main>
+
+<details class="journal" id="journal">
+  <summary>Noter une session ou une observation</summary>
+  <div class="corps">
+    <p>Deux notes séparées : les <b>conditions</b>, que le calcul prétend
+      prédire, et ta <b>session</b>, qui dépend aussi de la fatigue, du monde
+      ou du matériel. Les jours où tu n'y vas pas, un coup d'œil à la mer
+      suffit : note-le en observation. C'est ce qui révélera les bonnes
+      journées que le calcul a ratées.</p>
+    <div class="champs">
+      <div><label for="j-jour">jour</label><select id="j-jour"></select></div>
+      <div><label for="j-heure">heure</label><select id="j-heure"></select></div>
+      <div><label for="j-spot">spot</label><select id="j-spot"></select></div>
+    </div>
+    <div class="champs">
+      <div><label for="j-type">type</label>
+        <select id="j-type"><option value="session">session</option><option value="observation">observation</option></select></div>
+      <div id="j-bloc-planche"><label for="j-planche">planche</label>
+        <select id="j-planche"></select></div>
+    </div>
+    <div class="champs">
+      <div style="flex:1">
+        <label>conditions</label>
+        <div class="notes-choix" id="j-cond"></div>
+      </div>
+    </div>
+    <div class="champs" id="j-bloc-sess">
+      <div style="flex:1">
+        <label>ta session</label>
+        <div class="notes-choix" id="j-sess"></div>
+      </div>
+    </div>
+    <div>
+      <label for="j-com">commentaire</label>
+      <input type="text" id="j-com" placeholder="facultatif" maxlength="120">
+    </div>
+    <div class="ligne-csv" id="j-ligne"></div>
+    <div class="actions">
+      <button type="button" id="j-copier">Copier la ligne</button>
+      <a id="j-ouvrir" target="_blank" rel="noopener noreferrer">Ouvrir journal.csv</a>
+      <span class="retour" id="j-retour"></span>
+    </div>
+  </div>
+</details>
+
+<footer>
+  Mesures en temps réel : bouée houlographe d'Ambleteuse,
+  <a href="https://www.geodunes.fr/acces-aux-donnees-temps-reel-de-la-bouee-dambleteuse-62/">Géodunes</a>.
+  <br>Houle et vent : Open-Meteo (modèles EWAM et GWAM).
+  Données de marée fournies par <a href="https://api-maree.fr/">api-maree.fr</a>
+  sous licence CC BY, calculées à partir de composantes harmoniques
+  Ifremer / PREVIMER, elles-mêmes sous licence CC BY.
+  <br>Notes : moyennes géométriques, où un critère mauvais n'est pas
+  compensé par les autres : houle, vent, marée. Les colonnes éclairées
+  marquent la meilleure session du jour. Un carré pâle signale une prévision
+  lointaine ou disputée. Les hachures signalent une heure « chantier » : mer
+  formée mais hachée par le vent, surfable en shortboard si on est motivé.
+  <br>Équipement : à partir de la température de l'eau, refroidie quand l'air
+  ressenti est plus froid qu'elle et quand le vent dépasse 12 nœuds. Le résumé
+  du jour retient l'eau la plus froide, l'air le plus froid et le vent le plus
+  fort, pour ne pas finir la session sous-équipé.
+  <br>Planche : les deux planches du quiver les mieux adaptées à l'heure —
+  mini-mal 7'4 pour les petits jours mous, fish 5'6 pour les conditions
+  propres jusqu'à un bon mètre, Rocket 5'9 quand ça grossit ou que c'est haché
+  et qu'il faut passer la barre en canard.
+  <br>Énergie : flux de puissance de la houle, 0,49 × Hs² × T, en kilojoules
+  par seconde et par mètre de crête. ξ : nombre d'Iribarren, seuils calibrés
+  pour une plage dissipative. RTR : marnage rapporté à la hauteur de houle,
+  affiché pour contexte, hors de la note.
+  Translation : vitesse de déplacement du bord de l'eau sur l'estran.
+  Le courant est indicatif et n'entre pas dans la note.
+  <br>Vent : moyenne d'AROME HD (Météo-France, 1,5 km) et d'UKV (Met Office,
+  2 km) sur les deux premiers jours, puis global du Met Office (10 km). Un cadre pointillé signale
+  un écart d'au moins 5 nœuds entre les deux modèles fins.
+  <br>Orage : combiné du code météo, de la CAPE et de l'indice de soulèvement,
+  étendu aux deux heures voisines. Un risque élevé met la note à zéro.
+  Sur l'eau, la règle est de sortir dès le premier coup de tonnerre et
+  d'attendre trente minutes après le dernier avant de repartir.
+</footer>
+
+<script>
+const JOURS = ["dimanche","lundi","mardi","mercredi","jeudi","vendredi","samedi"];
+const MOIS  = ["janv.","févr.","mars","avril","mai","juin","juil.","août","sept.","oct.","nov.","déc."];
+
+const el = (t, c) => { const e = document.createElement(t); if (c) e.className = c; return e; };
+const couleur = n => Math.round(n) < 1
+  ? "var(--galet)"                       // note nulle : véto, pas une mauvaise note
+  : `var(--n${Math.min(5, Math.round(n))})`;
+
+// Vitesse de vent en nœuds. Bleu pâle pour le calme, puis vert, jaune,
+// ambre, orange, rouge et enfin mauve au-delà de 35 nœuds.
+const ECHELLE_VENT = [
+  [5, "#ECF2F3"], [10, "#D6E8EC"], [15, "#CDE6D7"], [20, "#E5EAC1"],
+  [25, "#F2DFB5"], [30, "#F1CDB5"], [35, "#ECBFBD"], [Infinity, "#E1BDD1"],
+];
+
+// Hauteur de houle en mètres, du gris neutre au vert pâle.
+const ECHELLE_HOULE = [
+  [0.3, "#E7EAEA"], [0.6, "#DDE7E1"], [0.9, "#D3E5D9"], [1.2, "#C6E2CF"],
+  [1.6, "#B5DDC3"], [2.2, "#A3D7B5"], [Infinity, "#90D0A7"],
+];
+
+function teinte(valeur, echelle) {
+  for (const [borne, couleur] of echelle) if (valeur < borne) return couleur;
+  return echelle[echelle.length - 1][1];
+}
+
+function bloc(texte, fond) {
+  return `<span class="bloc" style="background:${fond}">${texte}</span>`;
+}
+
+function rose(deg) {
+  const p = ["N","NNE","NE","ENE","E","ESE","SE","SSE","S","SSO","SO","OSO","O","ONO","NO","NNO"];
+  return p[Math.round(deg / 22.5) % 16];
+}
+
+// Carré arrondi portant sa note, coloré de rouge (1) à vert (5).
+// L'opacité traduit la fiabilité : une note lointaine ou disputée entre
+// modèles s'affiche plus pâle.
+function carre(note, taille, fiab = 1) {
+  const n = Math.min(5, Math.round(note));
+  // Une note nulle vient d'un véto : elle se dessine en creux, pour ne pas
+  // se confondre avec un simple 1.
+  const vide = n < 1;
+  const opacite = (0.35 + 0.65 * Math.max(0, Math.min(1, fiab))).toFixed(2);
+  return `<svg class="badge" width="${taille}" height="${taille}" viewBox="0 0 24 24"
+       role="img" aria-label="note ${vide ? 0 : n} sur 5" style="opacity:${opacite}">
+    <rect x="2" y="2" width="20" height="20" rx="5"
+          fill="${vide ? "none" : couleur(n)}"
+          ${vide ? 'stroke="var(--trait)" stroke-width="1.6"' : ""}/>
+    <text x="12" y="16.2" text-anchor="middle" font-size="11" font-weight="700"
+          fill="${vide ? "var(--galet)" : "#fff"}"
+          font-family="Barlow Semi Condensed, sans-serif">${vide ? 0 : n}</text>
+  </svg>`;
+}
+
+// Pourquoi une note est nulle.
+function motifZero(c) {
+  if (c.risque_orage === "élevé") return "orage";
+  if (c.note_houle === 0) return "houle insuffisante ou hors de la fenêtre de direction";
+  return "";
+}
+
+// Nom de planche, avec astérisque si elle n'est pas encore dans le quiver.
+function nomPlanche(pl) {
+  const nom = pl.court || pl.nom;
+  return pl.possedee ? nom : `<span class="absente">${nom}*</span>`;
+}
+
+function texteplanches(c) {
+  const pls = c.planches || [];
+  return pls.length ? pls.map(pl => pl.nom + (pl.possedee ? "" : "*")).join(" ou ") : "";
+}
+
+function libelleFiabilite(f) {
+  return f >= 0.85 ? "fiable" : f >= 0.6 ? "fiabilité moyenne" : "fiabilité faible";
+}
+
+// La flèche pointe dans le sens où ça va, comme sur Windguru :
+// un vent de sud (180°) est représenté par une flèche vers le haut.
+const fleche = deg => `<span class="fleche" style="transform:rotate(${(deg + 180) % 360}deg)">↑</span>`;
+
+let BORNES = [0, 1];
+
+function meilleureSession(creneaux, attr) {
+  const c = creneaux.filter(x => x[attr] != null && x[attr] > 0)
+                    .sort((a, z) => z[attr] - a[attr])[0];
+  return c ? { debut: new Date(c.instant).getTime(), note: c[attr] } : null;
+}
+
+function tableauJournee(creneaux, dureeSession) {
+  const cadre = el("div", "cadre");
+  const t = el("table");
+  const noteMax = Math.max(...creneaux.map(c => c.note_totale));
+  // Meilleure session du jour, sur dureeSession heures.
+  const duree = (dureeSession || 2) * 3600e3;
+  const sSurf = meilleureSession(creneaux, "session_surf");
+  const dans = (s, c) => s && new Date(c.instant).getTime() >= s.debut
+                           && new Date(c.instant).getTime() < s.debut + duree;
+
+  const lignes = [
+    { cle: "heures", libelle: "" },
+    { cle: "surf",   libelle: "surf" },
+    { cle: "planche", libelle: "planche" },
+    { cle: "orage",  libelle: "orage" },
+    { cle: "hauteur", libelle: "houle m", sep: true },
+    { cle: "periode", libelle: "période s" },
+    { cle: "dirhoule", libelle: "direction" },
+    { cle: "energie", libelle: "énergie kJ" },
+    { cle: "xi",      libelle: "déferl. ξ" },
+    { cle: "vent",   libelle: "vent nds", sep: true },
+    { cle: "rafales", libelle: "rafales" },
+    { cle: "dirvent", libelle: "direction" },
+    { cle: "eau",    libelle: "marée m", sep: true },
+    { cle: "phase",  libelle: "" },
+    { cle: "transl", libelle: "transl. m/min" },
+    { cle: "courant", libelle: "courant", bonus: true },
+  ];
+
+  lignes.forEach(ligne => {
+    const tr = el("tr", ligne.bonus ? "bonus"
+      : ligne.sep ? "separe" : (ligne.cle === "heures" ? "heures" : ""));
+    const th = el("th", "libelle");
+    th.textContent = ligne.libelle;
+    tr.append(th);
+
+    creneaux.forEach((c, i) => {
+      const cel = el(ligne.cle === "heures" ? "th" : "td");
+      if (dans(sSurf, c)) cel.classList.add("colonne-top");
+      const d = new Date(c.instant);
+
+      switch (ligne.cle) {
+        case "heures":
+          cel.textContent = String(d.getHours()).padStart(2, "0");
+          break;
+        case "surf": {
+          const n = c.note_totale;
+          cel.innerHTML = carre(n, 26, c.fiabilite ?? 1);
+          const motif = n === 0 ? motifZero(c) : "";
+          if (c.chantier && n > 0) cel.classList.add("chantier");
+          cel.title = (motif ? `0 / 5 — ${motif}` : `surf ${n.toFixed(1)} / 5`)
+            + (c.chantier && n > 0 ? " · session chantier : formé mais haché" : "")
+            + ` · ${libelleFiabilite(c.fiabilite ?? 1)}`;
+          break;
+        }
+        case "hauteur":
+          cel.classList.add("fond");
+          cel.innerHTML = bloc(c.hauteur_m.toFixed(2), teinte(c.hauteur_m, ECHELLE_HOULE));
+          if (c.note_totale === noteMax) cel.classList.add("pointe");
+          break;
+        case "periode":
+          cel.textContent = c.tpeak_s.toFixed(1);
+          break;
+        case "dirhoule":
+          cel.innerHTML = fleche(c.dir_houle);
+          cel.title = `${rose(c.dir_houle)} ${c.dir_houle}°`;
+          break;
+        case "energie":
+          cel.textContent = c.energie_kwm >= 10 ? Math.round(c.energie_kwm) : c.energie_kwm.toFixed(1);
+          break;
+        case "planche": {
+          const pls = c.planches || [];
+          cel.classList.add("planche");
+          // Rien à surfer, rien à conseiller.
+          if (!pls.length || c.note_totale === 0) { cel.innerHTML = `<span class="creux">–</span>`; break; }
+          cel.innerHTML = `<span class="p1">${nomPlanche(pls[0])}</span>`
+            + (pls[1] ? `<span class="p2">${nomPlanche(pls[1])}</span>` : "");
+          cel.title = `Planche : ${texteplanches(c)}`
+            + (pls.some(pl => !pl.possedee) ? " — * pas encore dans ton quiver" : "");
+          break;
+        }
+        case "orage": {
+          const n = c.risque_orage;
+          if (n === "nul") { cel.innerHTML = `<span class="creux">–</span>`; break; }
+          const teintes = { "faible": "var(--n3)", "modéré": "var(--n2)", "élevé": "var(--n1)" };
+          cel.innerHTML = n === "élevé"
+            ? `<span style="color:var(--n1);font-weight:600">⚡</span>`
+            : `<span class="pastille" style="background:${teintes[n]}"></span>`;
+          cel.title = `risque d'orage ${n}`
+            + (c.cape != null ? ` · CAPE ${Math.round(c.cape)} J/kg` : "")
+            + (c.lifted_index != null ? ` · indice ${c.lifted_index}` : "");
+          break;
+        }
+        case "xi": {
+          // Sur une plage dissipative, xi reste bas : les seuils sont
+          // relatifs au site, pas ceux de Battjes.
+          cel.textContent = c.xi.toFixed(2);
+          cel.style.color = c.xi >= 0.32 ? "var(--n5)" : c.xi < 0.15 ? "var(--n1)" : "";
+          cel.title = (c.xi >= 0.32 ? "déferlement franc"
+                     : c.xi < 0.15 ? "mer molle, déferlement étalé" : "intermédiaire")
+                     + (c.mer_locale ? " · mer levée par le vent local" : " · houle venue d'ailleurs");
+          break;
+        }
+        case "transl":
+          cel.textContent = c.translation_m_min.toFixed(1);
+          cel.style.color = couleur(c.note_stabilite);
+          cel.title = `zone de déferlement : ${c.translation_m_min < 0.6 ? "stationnaire" : c.translation_m_min > 2.2 ? "balaie le profil" : "se déplace"}`;
+          break;
+        case "courant": {
+          if (!c.courant_effet || c.courant_effet === "négligeable") {
+            cel.textContent = "–";
+            break;
+          }
+          const favorable = c.courant_effet.includes("favorable")
+            && !c.courant_effet.includes("défavorable");
+          const teinte = favorable ? "var(--n5)"
+            : c.courant_effet.includes("défavorable") ? "var(--n1)" : "var(--galet)";
+          cel.innerHTML = `<span class="pastille" style="background:${teinte}"></span>`;
+          cel.title = `${c.courant_effet}${c.courant_kt ? ` · ${c.courant_kt.toFixed(1)} nds` : ""}`;
+          break;
+        }
+        case "vent": {
+          cel.classList.add("fond", "pointe");
+          const incertain = c.ecart_vent_kt != null && c.ecart_vent_kt >= 5;
+          cel.innerHTML = bloc(Math.round(c.vitesse_kt),
+                               teinte(c.vitesse_kt, ECHELLE_VENT));
+          if (incertain) cel.firstChild.classList.add("incertain");
+          // La qualité du secteur passe dans l'infobulle : le fond ne dit
+          // plus que la force, comme sur Windguru.
+          cel.title = `${Math.round(c.vitesse_kt)} nds ${rose(c.dir_vent)} · ${c.cat_vent}`
+            + (c.modele_vent ? ` · ${c.modele_vent}` : "")
+            + (c.ecart_vent_kt != null ? ` · écart entre modèles ${c.ecart_vent_kt} nds` : "");
+          break;
+        }
+        case "rafales":
+          cel.classList.add("fond");
+          cel.innerHTML = bloc(Math.round(c.rafales_kt),
+                               teinte(c.rafales_kt, ECHELLE_VENT));
+          cel.title = `rafales ${Math.round(c.rafales_kt)} nds`;
+          break;
+        case "dirvent":
+          cel.innerHTML = fleche(c.dir_vent);
+          cel.title = `${rose(c.dir_vent)} ${c.dir_vent}° · ${c.cat_vent}`;
+          break;
+        case "eau": {
+          cel.classList.add("maree");
+          if (c.hauteur_eau_m === null || c.hauteur_eau_m === undefined) {
+            cel.textContent = "—";
+            break;
+          }
+          // Hauteur de barre relative aux bornes de toute la période, pour que
+          // les journées de vive-eau et de morte-eau restent comparables.
+          const f = (c.hauteur_eau_m - BORNES[0]) / Math.max(0.01, BORNES[1] - BORNES[0]);
+          const px = Math.max(2, Math.round(3 + f * 26));
+          cel.innerHTML = `<span class="colonne-eau"><i style="height:${px}px;background:${couleur(c.note_maree)}"></i></span>`;
+          cel.title = `${c.hauteur_eau_m.toFixed(1)} m · pleine mer ${c.heures_depuis_pm >= 0 ? "+" : "−"}${Math.abs(c.heures_depuis_pm).toFixed(1)} h`;
+          break;
+        }
+        case "phase":
+          cel.className = "niveau" + (dans(sSurf, c) ? " colonne-top" : "");
+          cel.textContent = c.hauteur_eau_m === null || c.hauteur_eau_m === undefined
+            ? "" : c.hauteur_eau_m.toFixed(1);
+          break;
+      }
+      tr.append(cel);
+    });
+    t.append(tr);
+  });
+
+  cadre.append(t);
+  return cadre;
+}
+
+// « 5/4 · chaussons 5 mm · gants 3 mm · cagoule », calculé par le script.
+function texteEquipement(eq) {
+  if (!eq) return "";
+  const m = [eq.combi];
+  if (eq.chaussons) m.push(`chaussons ${eq.chaussons}`);
+  if (eq.gants) m.push(`gants ${eq.gants}`);
+  if (eq.cagoule) m.push("cagoule");
+  return m.join(" · ");
+}
+
+function apercuJournee(r) {
+  const p = el("p", "apercu marge");
+  const marees = r.marees
+    .filter(m => m.type === "PM")
+    .map(m => `PM ${m.heure}${m.coef ? ` (${m.coef})` : ""}`)
+    .join(" · ");
+  p.innerHTML = `${marees || "—"} &nbsp;|&nbsp; jour ${r.lever}–${r.coucher}
+    &nbsp;|&nbsp; marnage ${r.marnage_m} m · RTR <b>${r.rtr}</b>
+    &nbsp;|&nbsp; jusqu'à <b>${Math.round(r.energie_max_kwm)} kJ</b>
+    &nbsp;|&nbsp; surf ${r.meilleure_note > 0
+      ? `<b>${r.meilleure_heure.slice(0, 2)}h</b> (${r.meilleure_note.toFixed(1)})`
+      : `<b>—</b>`}`;
+  // Températures du jour et équipement, conseillé de façon prudente : eau la
+  // plus froide, air ressenti le plus froid et vent le plus fort de la journée.
+  if (r.temp_eau != null) {
+    const air = r.temp_air ? ` · air ${r.temp_air[0]} à ${r.temp_air[1]} °C` : "";
+    p.innerHTML += `<br>eau ${String(r.temp_eau).replace(".", ",")} °C${air}
+      &nbsp;|&nbsp; <b>${texteEquipement(r.equipement)}</b>`;
+  }
+  p.title = r.rtr > 8
+    ? "RTR élevé : la marée domine les vagues, la zone de surf se définit mal"
+    : "RTR modéré : la plage reste dominée par les vagues";
+  return p;
+}
+
+function alerteOrage(r) {
+  if (!r || !["modéré", "élevé"].includes(r.orage_max)) return null;
+  const d = el("div", "alerte-orage");
+  const heures = (r.heures_orage || []).join(", ");
+  d.innerHTML = r.orage_max === "élevé"
+    ? `<span>&#9889;</span><span><b>Orage prévu${heures ? ` vers ${heures}` : ""}.</b>
+       Ces créneaux sont notés zéro : on ne surfe pas sous l'orage.</span>`
+    : `<span>&#9889;</span><span><b>Atmosphère instable.</b>
+       Risque orageux modéré sur la journée, notes plafonnées. Surveille le ciel
+       et sors de l'eau au premier coup de tonnerre.</span>`;
+  return d;
+}
+
+const ICONES = {
+  bouee: "<svg viewBox=\"0 0 16 13\" shape-rendering=\"crispEdges\" aria-hidden=\"true\"><rect x=\"7\" y=\"0\" width=\"2\" height=\"1\" fill=\"#123239\"/><rect x=\"6\" y=\"1\" width=\"1\" height=\"1\" fill=\"#123239\"/><rect x=\"7\" y=\"1\" width=\"2\" height=\"1\" fill=\"#C0762A\"/><rect x=\"9\" y=\"1\" width=\"1\" height=\"1\" fill=\"#123239\"/><rect x=\"6\" y=\"2\" width=\"1\" height=\"1\" fill=\"#123239\"/><rect x=\"7\" y=\"2\" width=\"2\" height=\"1\" fill=\"#C0762A\"/><rect x=\"9\" y=\"2\" width=\"1\" height=\"1\" fill=\"#123239\"/><rect x=\"7\" y=\"3\" width=\"2\" height=\"1\" fill=\"#123239\"/><rect x=\"5\" y=\"4\" width=\"6\" height=\"1\" fill=\"#123239\"/><rect x=\"4\" y=\"5\" width=\"1\" height=\"1\" fill=\"#123239\"/><rect x=\"5\" y=\"5\" width=\"6\" height=\"1\" fill=\"#C0762A\"/><rect x=\"11\" y=\"5\" width=\"1\" height=\"1\" fill=\"#123239\"/><rect x=\"4\" y=\"6\" width=\"1\" height=\"1\" fill=\"#123239\"/><rect x=\"5\" y=\"6\" width=\"6\" height=\"1\" fill=\"#F4F7F6\"/><rect x=\"11\" y=\"6\" width=\"1\" height=\"1\" fill=\"#123239\"/><rect x=\"4\" y=\"7\" width=\"1\" height=\"1\" fill=\"#123239\"/><rect x=\"5\" y=\"7\" width=\"6\" height=\"1\" fill=\"#C0762A\"/><rect x=\"11\" y=\"7\" width=\"1\" height=\"1\" fill=\"#123239\"/><rect x=\"3\" y=\"8\" width=\"1\" height=\"1\" fill=\"#123239\"/><rect x=\"4\" y=\"8\" width=\"8\" height=\"1\" fill=\"#F4F7F6\"/><rect x=\"12\" y=\"8\" width=\"1\" height=\"1\" fill=\"#123239\"/><rect x=\"3\" y=\"9\" width=\"1\" height=\"1\" fill=\"#123239\"/><rect x=\"4\" y=\"9\" width=\"8\" height=\"1\" fill=\"#C0762A\"/><rect x=\"12\" y=\"9\" width=\"1\" height=\"1\" fill=\"#123239\"/><rect x=\"3\" y=\"10\" width=\"10\" height=\"1\" fill=\"#123239\"/><rect x=\"2\" y=\"11\" width=\"3\" height=\"1\" fill=\"#5E93A0\"/><rect x=\"7\" y=\"11\" width=\"3\" height=\"1\" fill=\"#5E93A0\"/><rect x=\"12\" y=\"11\" width=\"3\" height=\"1\" fill=\"#5E93A0\"/><rect x=\"1\" y=\"12\" width=\"15\" height=\"1\" fill=\"#5E93A0\"/></svg>",
+  webcam: "<svg viewBox=\"0 0 16 13\" shape-rendering=\"crispEdges\" aria-hidden=\"true\"><rect x=\"2\" y=\"1\" width=\"10\" height=\"1\" fill=\"#123239\"/><rect x=\"2\" y=\"2\" width=\"1\" height=\"1\" fill=\"#123239\"/><rect x=\"3\" y=\"2\" width=\"8\" height=\"1\" fill=\"#3A5A61\"/><rect x=\"11\" y=\"2\" width=\"2\" height=\"1\" fill=\"#123239\"/><rect x=\"2\" y=\"3\" width=\"1\" height=\"1\" fill=\"#123239\"/><rect x=\"3\" y=\"3\" width=\"2\" height=\"1\" fill=\"#3A5A61\"/><rect x=\"5\" y=\"3\" width=\"3\" height=\"1\" fill=\"#123239\"/><rect x=\"8\" y=\"3\" width=\"4\" height=\"1\" fill=\"#3A5A61\"/><rect x=\"12\" y=\"3\" width=\"1\" height=\"1\" fill=\"#123239\"/><rect x=\"2\" y=\"4\" width=\"1\" height=\"1\" fill=\"#123239\"/><rect x=\"3\" y=\"4\" width=\"2\" height=\"1\" fill=\"#3A5A61\"/><rect x=\"5\" y=\"4\" width=\"1\" height=\"1\" fill=\"#123239\"/><rect x=\"6\" y=\"4\" width=\"2\" height=\"1\" fill=\"#B4CBD1\"/><rect x=\"8\" y=\"4\" width=\"1\" height=\"1\" fill=\"#123239\"/><rect x=\"9\" y=\"4\" width=\"4\" height=\"1\" fill=\"#3A5A61\"/><rect x=\"13\" y=\"4\" width=\"1\" height=\"1\" fill=\"#123239\"/><rect x=\"2\" y=\"5\" width=\"1\" height=\"1\" fill=\"#123239\"/><rect x=\"3\" y=\"5\" width=\"2\" height=\"1\" fill=\"#3A5A61\"/><rect x=\"5\" y=\"5\" width=\"1\" height=\"1\" fill=\"#123239\"/><rect x=\"6\" y=\"5\" width=\"2\" height=\"1\" fill=\"#B4CBD1\"/><rect x=\"8\" y=\"5\" width=\"1\" height=\"1\" fill=\"#123239\"/><rect x=\"9\" y=\"5\" width=\"4\" height=\"1\" fill=\"#3A5A61\"/><rect x=\"13\" y=\"5\" width=\"1\" height=\"1\" fill=\"#123239\"/><rect x=\"2\" y=\"6\" width=\"1\" height=\"1\" fill=\"#123239\"/><rect x=\"3\" y=\"6\" width=\"2\" height=\"1\" fill=\"#3A5A61\"/><rect x=\"5\" y=\"6\" width=\"3\" height=\"1\" fill=\"#123239\"/><rect x=\"8\" y=\"6\" width=\"4\" height=\"1\" fill=\"#3A5A61\"/><rect x=\"12\" y=\"6\" width=\"1\" height=\"1\" fill=\"#123239\"/><rect x=\"2\" y=\"7\" width=\"1\" height=\"1\" fill=\"#123239\"/><rect x=\"3\" y=\"7\" width=\"8\" height=\"1\" fill=\"#3A5A61\"/><rect x=\"11\" y=\"7\" width=\"1\" height=\"1\" fill=\"#123239\"/><rect x=\"2\" y=\"8\" width=\"10\" height=\"1\" fill=\"#123239\"/><rect x=\"6\" y=\"9\" width=\"2\" height=\"1\" fill=\"#123239\"/><rect x=\"5\" y=\"10\" width=\"4\" height=\"1\" fill=\"#123239\"/><rect x=\"4\" y=\"11\" width=\"6\" height=\"1\" fill=\"#123239\"/></svg>",
+  previsions: "<svg viewBox=\"0 0 16 13\" shape-rendering=\"crispEdges\" aria-hidden=\"true\"><rect x=\"3\" y=\"1\" width=\"9\" height=\"1\" fill=\"#123239\"/><rect x=\"3\" y=\"2\" width=\"9\" height=\"1\" fill=\"#123239\"/><rect x=\"2\" y=\"4\" width=\"12\" height=\"1\" fill=\"#123239\"/><rect x=\"2\" y=\"5\" width=\"13\" height=\"1\" fill=\"#123239\"/><rect x=\"13\" y=\"6\" width=\"2\" height=\"1\" fill=\"#123239\"/><rect x=\"12\" y=\"7\" width=\"3\" height=\"1\" fill=\"#123239\"/><rect x=\"10\" y=\"8\" width=\"3\" height=\"1\" fill=\"#123239\"/><rect x=\"4\" y=\"10\" width=\"7\" height=\"1\" fill=\"#123239\"/><rect x=\"4\" y=\"11\" width=\"7\" height=\"1\" fill=\"#123239\"/></svg>",
+};
+
+const LIBELLES = {
+  bouee: "Bouée — mesures en temps réel",
+  webcam: "Webcam du spot",
+  previsions: "Prévisions Windguru",
+};
+
+function majLiens(spot) {
+  const zone = document.getElementById("liens");
+  zone.innerHTML = "";
+  const liens = (spot && spot.liens) || {};
+  ["bouee", "webcam", "previsions"].forEach(cle => {
+    if (!liens[cle]) return;
+    const a = document.createElement("a");
+    a.href = liens[cle];
+    a.target = "_blank";
+    a.rel = "noopener noreferrer";
+    a.title = `${LIBELLES[cle]} — ${spot.nom}`;
+    a.setAttribute("aria-label", a.title);
+    a.innerHTML = ICONES[cle];
+    zone.append(a);
+  });
+}
+
+let DONNEES = null;
+let SPOT_ACTIF = 0;
+
+function meilleurePour(spot, attr) {
+  // Meilleure session à venir sur toute la période. Si les sessions n'ont
+  // pas encore été calculées (ancien fichier), on retombe sur la note horaire.
+  const avecSession = spot.creneaux.filter(c => c[attr] != null);
+  if (avecSession.length) {
+    return avecSession.sort((a, z) => z[attr] - a[attr])[0];
+  }
+  const horaire = "note_totale";
+  const c = [...spot.creneaux].sort((a, z) => z[horaire] - a[horaire])[0];
+  return c ? { ...c, [attr]: c[horaire] } : null;
+}
+
+function heureCourte(instant) {
+  const d = new Date(instant);
+  // Format court : la prévision ne couvre que quelques jours, le jour de la
+  // semaine suffit à les distinguer, et l'heure reste lisible sur téléphone.
+  return `${JOURS[d.getDay()].slice(0, 3)} ${String(d.getHours()).padStart(2, "0")}h`;
+}
+
+function carteSpot(spot, index) {
+  const b = el("button", "carte-spot");
+  b.type = "button";
+  b.setAttribute("aria-pressed", String(index === SPOT_ACTIF));
+
+  if (!spot.creneaux.length) {
+    b.innerHTML = `<span class="mats"><span class="mat"></span></span>
+      <span class="corps"><span class="nom">${spot.nom}</span>
+      <span class="quand">${spot.erreur ? "indisponible" : "pas de données"}</span></span>`;
+  } else {
+    const disc = [["surf", "session_surf"]].map(([nom, attr]) => {
+      const c = meilleurePour(spot, attr);
+      return { nom, c, n: c ? c[attr] : 0 };
+    });
+    const mat = x => `<span class="mat" title="${x.nom}"><i style="height:${x.n > 0 ? x.n / 5 * 100 : 0}%;background:${couleur(x.n)}"></i></span>`;
+    const ligneDisc = x => `<span class="disc"><span class="qui">${x.nom}</span>
+        <b style="color:${couleur(x.n)}">${x.n.toFixed(1)}</b>
+        <span>${x.c && x.n > 0 ? heureCourte(x.c.instant) : "—"}</span></span>`;
+    b.innerHTML = `<span class="mats">${disc.map(mat).join("")}</span>
+      <span class="corps"><span class="nom">${spot.nom}</span>
+        ${disc.map(ligneDisc).join("")}</span>`;
+  }
+
+  b.addEventListener("click", () => {
+    if (index === SPOT_ACTIF) return;
+    SPOT_ACTIF = index;
+    afficher();
+    const champSpot = document.getElementById("j-spot");
+    if (champSpot && DONNEES.spots[index]) {
+      champSpot.value = DONNEES.spots[index].cle;
+      rafraichirLigne();
+    }
+  });
+  return b;
+}
+
+function afficher() {
+  const contenu = document.getElementById("contenu");
+  contenu.innerHTML = "";
+
+  // Sélecteur : les deux spots côte à côte, avec leur meilleur créneau.
+  const barre = document.getElementById("spots");
+  barre.innerHTML = "";
+  DONNEES.spots.forEach((sp, i) => barre.append(carteSpot(sp, i)));
+
+  const spot = DONNEES.spots[SPOT_ACTIF];
+  majLiens(spot);
+  if (!spot || !spot.creneaux.length) {
+    const raison = spot && spot.erreur
+      ? `Le calcul a échoué pour ${spot.nom} lors de la dernière mise à jour.
+         <br><small>${spot.erreur.replace(/</g, "&lt;")}</small>`
+      : "Aucun créneau de jour pour ce spot.";
+    contenu.insertAdjacentHTML("beforeend", `<p class="vide">${raison}</p>`);
+    return;
+  }
+
+  // Les bornes de marée sont propres au spot : deux ports différents,
+  // deux marnages différents.
+  const eaux = spot.creneaux.map(c => c.hauteur_eau_m)
+    .filter(v => v !== null && v !== undefined);
+  BORNES = eaux.length ? [Math.min(...eaux), Math.max(...eaux)] : [0, 1];
+
+  const pic = spot.pic_maree_h;
+  const quandMaree = pic > 0 ? `${pic} h après la pleine mer`
+    : pic < 0 ? `${Math.abs(pic)} h avant la pleine mer` : "à la pleine mer";
+  const duree = spot.duree_session_h || 2;
+  const plage = c => {
+    const d = new Date(c.instant), fin = new Date(d.getTime() + duree * 3600e3);
+    return `${JOURS[d.getDay()]} ${d.getDate()}, ${String(d.getHours()).padStart(2, "0")}h–${String(fin.getHours()).padStart(2, "0")}h`;
+  };
+  const bSurf = meilleurePour(spot, "session_surf");
+  const orage = c => c.risque_orage && c.risque_orage !== "nul"
+    ? ` · <span style="color:var(--n1)">orage ${c.risque_orage}</span>` : "";
+  const detail = el("p", "phare");
+  detail.innerHTML =
+    (bSurf && bSurf.session_surf > 0
+      ? `Surf : <b>${plage(bSurf)}</b>, ${bSurf.session_surf.toFixed(1)}/5${
+           bSurf.session_chantier != null ? " (chantier)" : ""} —
+         ${bSurf.hauteur_m.toFixed(2)} m à ${bSurf.tpeak_s.toFixed(1)} s,
+         vent ${Math.round(bSurf.vitesse_kt)} nds ${rose(bSurf.dir_vent)}${
+           (bSurf.planches || []).length ? `, ${texteplanches(bSurf)}` : ""}${
+           bSurf.equipement ? `, ${texteEquipement(bSurf.equipement)}` : ""}${orage(bSurf)}`
+      : `Surf : rien de surfable sur la période.`)
+    + `<br><small>Houle attendue de ${spot.bouee}, optimum de marée surf
+       ${quandMaree}. Sessions de ${duree} h. Carrés pâles = prévision moins
+       fiable.</small>`;
+  // Mesure réelle de la bouée d'Ambleteuse, pour Wimereux seulement : elle
+  // est mouillée à quelques kilomètres au nord du spot.
+  const b = DONNEES.bouee_ambleteuse;
+  if (spot.cle === "wimereux" && b && b.hauteur_m != null) {
+    const age = Math.round((Date.now() - new Date(b.instant).getTime()) / 60000);
+    const quand = age < 90 ? `il y a ${Math.max(age, 0)} min` : `il y a ${Math.round(age / 60)} h`;
+    const v = x => String(x).replace(".", ",");
+    detail.innerHTML = `<span style="${age > 360 ? "opacity:.6" : ""}"><b>En ce moment</b>,
+      bouée d'Ambleteuse ${quand} : <b>${v(b.hauteur_m.toFixed(2))} m à ${v(b.periode_pic_s.toFixed(1))} s</b>,
+      du ${Math.round(b.direction_pic)}° ${rose(b.direction_pic)}${b.temp_eau != null
+        ? `, eau ${v(b.temp_eau.toFixed(1))} °C` : ""}${b.vent_kt != null
+        ? `, vent estimé ${Math.round(b.vent_kt)} nds` : ""}${b.note_mesuree != null
+        ? ` → <b>${v(b.note_mesuree.toFixed(1))}/5 mesuré</b>, ${v(b.note_prevue.toFixed(1))} prévu` : ""}
+      · <a href="${b.source}" target="_blank" rel="noopener noreferrer"
+           style="color:inherit">Géodunes</a></span><br>` + detail.innerHTML;
+  }
+  contenu.append(detail);
+
+  const resumes = {};
+  (spot.journees || []).forEach(r => { resumes[r.date] = r; });
+
+  const parJour = {};
+  spot.creneaux.forEach(c => {
+    const k = c.instant.slice(0, 10);
+    (parJour[k] = parJour[k] || []).push(c);
+  });
+
+  Object.keys(parJour).sort().forEach(k => {
+    const bloc = el("section", "journee");
+    const d = new Date(k);
+    const titre = el("h2", "marge");
+    titre.textContent = `${JOURS[d.getDay()]} ${d.getDate()} ${MOIS[d.getMonth()]}`;
+    bloc.append(titre);
+    if (resumes[k]) bloc.append(apercuJournee(resumes[k]));
+    const alerte = alerteOrage(resumes[k]);
+    if (alerte) bloc.append(alerte);
+    bloc.append(tableauJournee(parJour[k], duree));
+    contenu.append(bloc);
+  });
+}
+
+
+/* ================= Journal de sessions =================
+   Le but est qu'une sortie se note en quatre touches depuis le parking.
+   La page ne peut pas écrire dans le dépôt, alors elle prépare la ligne
+   CSV, la copie, et ouvre journal.csv en édition sur GitHub. */
+
+const J_NOTES = { cond: 3, sess: 3 };
+
+function depotGitHub() {
+  // Sur Pages, l'adresse est compte.github.io/depot/ : tout est déductible.
+  const m = location.hostname.match(/^([^.]+)\.github\.io$/);
+  if (!m) return null;
+  const depot = location.pathname.split("/").filter(Boolean)[0];
+  if (!depot) return null;
+  return `https://github.com/${m[1]}/${depot}/edit/main/journal.csv`;
+}
+
+function ligneCsv() {
+  const v = id => document.getElementById(id).value;
+  const type = v("j-type");
+  let com = v("j-com").trim().replace(/"/g, "'");
+  if (com.includes(",")) com = `"${com}"`;
+  // Format : date,heure,spot,discipline,type,conditions,session,planche,commentaire
+  const sess = type === "observation" ? "" : J_NOTES.sess;
+  // La planche n'a de sens que pour une session, pas une observation.
+  const planche = type === "session" ? v("j-planche") : "";
+  return `${v("j-jour")},${v("j-heure")},${v("j-spot")},surf,${type},${J_NOTES.cond},${sess},${planche},${com}`;
+}
+
+function rafraichirLigne() {
+  document.getElementById("j-ligne").textContent = ligneCsv();
+}
+
+function initJournal() {
+  const jours = document.getElementById("j-jour");
+  const aujourdhui = new Date();
+  // Les sept derniers jours : on note une sortie passée, pas une prévision.
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(aujourdhui);
+    d.setDate(d.getDate() - i);
+    const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    const o = document.createElement("option");
+    o.value = iso;
+    o.textContent = i === 0 ? "aujourd'hui"
+      : i === 1 ? "hier"
+      : `${JOURS[d.getDay()].slice(0, 3)} ${d.getDate()} ${MOIS[d.getMonth()]}`;
+    jours.append(o);
+  }
+
+  const heures = document.getElementById("j-heure");
+  for (let h = 5; h <= 22; h++) {
+    const o = document.createElement("option");
+    o.value = h;
+    o.textContent = `${String(h).padStart(2, "0")}h`;
+    if (h === Math.min(22, Math.max(5, aujourdhui.getHours()))) o.selected = true;
+    heures.append(o);
+  }
+
+  const spots = document.getElementById("j-spot");
+  (DONNEES.spots || []).forEach((sp, i) => {
+    const o = document.createElement("option");
+    o.value = sp.cle;
+    o.textContent = sp.nom;
+    if (i === SPOT_ACTIF) o.selected = true;
+    spots.append(o);
+  });
+
+  // Deux sélecteurs de carrés : conditions et session.
+  [["j-cond", "cond"], ["j-sess", "sess"]].forEach(([id, cle]) => {
+    const choix = document.getElementById(id);
+    for (let n = 1; n <= 5; n++) {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.textContent = n;
+      b.setAttribute("aria-pressed", String(n === J_NOTES[cle]));
+      b.style.background = n === J_NOTES[cle] ? couleur(n) : "";
+      b.addEventListener("click", () => {
+        J_NOTES[cle] = n;
+        [...choix.children].forEach((x, i) => {
+          const actif = i + 1 === n;
+          x.setAttribute("aria-pressed", String(actif));
+          x.style.background = actif ? couleur(i + 1) : "";
+        });
+        rafraichirLigne();
+      });
+      choix.append(b);
+    }
+  });
+
+  // En observation, il n'y a pas de session à noter.
+  const typeChamp = document.getElementById("j-type");
+  const blocSess = document.getElementById("j-bloc-sess");
+  // Menu des planches : celles du quiver, plus « autre ».
+  const menuPlanche = document.getElementById("j-planche");
+  (DONNEES.planches || []).forEach(pl => {
+    const o = document.createElement("option");
+    o.value = pl.nom;
+    o.textContent = pl.possedee ? pl.nom : `${pl.nom} (pas encore)`;
+    menuPlanche.append(o);
+  });
+  menuPlanche.append(Object.assign(document.createElement("option"),
+                                   { value: "autre", textContent: "autre" }));
+
+  // En observation, ni session ni planche.
+  const blocPlanche = document.getElementById("j-bloc-planche");
+  const majChamps = () => {
+    blocSess.style.display = typeChamp.value === "observation" ? "none" : "";
+    blocPlanche.style.display = typeChamp.value === "session" ? "" : "none";
+  };
+  typeChamp.addEventListener("input", majChamps);
+  majChamps();
+
+  ["j-jour", "j-heure", "j-spot", "j-type", "j-planche", "j-com"].forEach(id =>
+    document.getElementById(id).addEventListener("input", rafraichirLigne));
+
+  const lien = document.getElementById("j-ouvrir");
+  const url = depotGitHub();
+  if (url) {
+    lien.href = url;
+  } else {
+    lien.remove();
+  }
+
+  const retour = document.getElementById("j-retour");
+  document.getElementById("j-copier").addEventListener("click", async () => {
+    try {
+      await navigator.clipboard.writeText(ligneCsv());
+      retour.textContent = "Copié. Colle la ligne à la fin du fichier.";
+    } catch {
+      retour.textContent = "Copie impossible : sélectionne la ligne à la main.";
+    }
+  });
+
+  rafraichirLigne();
+}
+
+// Un data.json produit par une version antérieure du script n'a pas tous les
+// champs. On les complète avec des valeurs neutres : la page reste lisible
+// entre la mise en ligne d'une nouvelle page et le recalcul suivant.
+function normaliser(data) {
+  (data.spots || []).forEach(sp => {
+    sp.creneaux = sp.creneaux || [];
+    sp.journees = sp.journees || [];
+    sp.creneaux.forEach(c => {
+      c.note_totale ??= 0;
+      c.session_surf ??= null;
+      c.session_chantier ??= null;
+      c.chantier ??= false;
+      c.fiabilite ??= 1;
+      c.equipement ??= null;
+    });
+    sp.journees.forEach(r => {
+      r.meilleure_note ??= 0;
+      r.meilleure_heure ??= "";
+      r.temp_eau ??= null;
+    });
+  });
+  return data;
+}
+
+function rendre(data) {
+  data.bouee_ambleteuse ??= null;
+  DONNEES = normaliser(data);
+  const maj = new Date(data.genere_le);
+  document.getElementById("maj").textContent =
+    `mis à jour ${String(maj.getHours()).padStart(2, "0")}h${String(maj.getMinutes()).padStart(2, "0")}`;
+  afficher();
+  initJournal();
+}
+
+fetch("data.json?" + Date.now())
+  .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+  .then(rendre)
+  .catch(() => {
+    document.getElementById("contenu").innerHTML =
+      `<p class="erreur">Les prévisions n'ont pas pu être chargées. La dernière mise à jour a peut-être échoué — vérifie l'onglet Actions du dépôt.</p>`;
+  });
+</script>
+</body>
+</html>
