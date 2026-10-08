@@ -1,1 +1,10 @@
-{"annonces": {}, "immediats": [], "surprise": null}
+{
+ "annonces": {
+  "calais|chantier|2026-10-08": {
+   "note": 2.8,
+   "debut": "2026-10-08T16:00:00"
+  }
+ },
+ "immediats": [],
+ "surprise": null
+}
