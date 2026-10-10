@@ -766,9 +766,13 @@ function afficher() {
     .filter(v => v !== null && v !== undefined);
   BORNES = eaux.length ? [Math.min(...eaux), Math.max(...eaux)] : [0, 1];
 
-  const pic = spot.pic_maree_h;
-  const quandMaree = pic > 0 ? `${pic} h après la pleine mer`
-    : pic < 0 ? `${Math.abs(pic)} h avant la pleine mer` : "à la pleine mer";
+  // Un ou plusieurs pics de marée (Siouville : 2 h avant et 2 h après).
+  const pics = [].concat(spot.pic_maree_h);
+  const unPic = p => p > 0 ? `${p} h après la pleine mer`
+    : p < 0 ? `${Math.abs(p)} h avant la pleine mer` : "à la pleine mer";
+  const quandMaree = pics.length === 2 && pics[0] === -pics[1]
+    ? `${Math.abs(pics[0])} h avant ou après la pleine mer`
+    : pics.map(unPic).join(" ou ");
   const duree = spot.duree_session_h || 2;
   const plage = c => {
     const d = new Date(c.instant), fin = new Date(d.getTime() + duree * 3600e3);

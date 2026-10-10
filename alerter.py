@@ -144,7 +144,8 @@ def main() -> int:
     seuils = {"surf": args.seuil, "chantier": args.seuil_chantier}
 
     for spot in data.get("spots", []):
-        if not spot.get("creneaux"):
+        # Un spot peut n'être là que pour la page ("alertes": False dans SPOTS).
+        if not spot.get("creneaux") or not spot.get("alertes", True):
             continue
         nom = spot["nom"]
         duree = spot.get("duree_session_h", 2)

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-previsions.py — Notation des sessions de surf à Wimereux et à Calais.
+previsions.py — Notation des sessions de surf à Wimereux, Calais et Siouville.
 
 Trois notes sur 5 (houle, marée, vent) plus une note globale, enrichies par
 quatre apports de la littérature sur les plages macrotidales à barres et
@@ -21,17 +21,18 @@ bâches, dont fait partie la Côte d'Opale :
 Le courant de marée est calculé et affiché à part, en bonus, sans entrer dans
 la note : son effet sur la qualité reste une hypothèse à valider par le journal.
 
-Les deux spots ne se ressemblent pas : Wimereux regarde l'ouest-nord-ouest et
+Les spots ne se ressemblent pas : Wimereux regarde l'ouest-nord-ouest et
 marche sur la houle d'ouest-sud-ouest une heure après la pleine mer ; Calais
 regarde le nord, marche sur la houle de nord et au montant avant la pleine
-mer. Chacun a donc sa bouée, sa fenêtre de direction, son optimum de marée,
+mer ; Siouville, dans la Hague, prend la houle atlantique d'ouest, plus longue
+et plus puissante, et marche sur le descendant. Chacun a donc sa bouée, sa fenêtre de direction, son optimum de marée,
 ses secteurs de vent et sa table de fetch — tout est dans SPOTS ci-dessous.
 
 Sources : Open-Meteo (houle, vent, courant), api-maree.fr (marée, clé requise
 dans API_MAREE_KEY).
 
 Usage :
-    python previsions.py                          # les deux spots, console
+    python previsions.py                          # tous les spots, console
     python previsions.py --spot calais            # un seul
     python previsions.py --json docs/data.json    # export pour la page web
 """
@@ -151,6 +152,47 @@ SPOTS = {
             "webcam": "https://www.vision-environnement.com/it/webcam/francia/"
                       "hauts-de-france/1241-sangatte/",
             "previsions": "https://www.windguru.cz/48349",
+        },
+    },
+    "siouville": {
+        "nom": "Siouville",
+        # Pas de bouée houlographique proche : la houle vient du modèle, à
+        # ~8 km au large de la plage, en mer ouverte sur l'Atlantique.
+        "bouee": "la Hague",
+        "point_houle": (49.58, -1.95),
+        "point_spot": (49.5698, -1.8446),
+        "point_vent": (49.5700, -1.8700),
+        "point_courant": (49.58, -1.92),
+        # Port de référence api-maree le plus proche : Diélette, 4 km au sud.
+        "site_maree": os.environ.get("SITE_MAREE_SIOUVILLE", "dielette"),
+        # Grande plage tournée vers l'ouest, ouverte à la houle atlantique du
+        # sud-ouest au nord-ouest ; l'ouest est la meilleure.
+        "direction_houle": (225.0, 315.0),
+        "marge_direction": 15.0,
+        # Deux optimums, 2 h avant et 2 h après la pleine mer (expérience de
+        # Clément) : la pleine mer elle-même est trop pleine, la basse mer
+        # moins bonne. Une liste donne plusieurs pics ; entre deux pics, la
+        # note redescend à 3 sur 5.
+        "pic_maree_h": [-2.0, 2.0],
+        # Vent d'est offshore ; la pointe du Platé abrite un peu du sud.
+        "axe_offshore_surf": 95.0,
+        # Trajet depuis Wimille, pour mémoire : ce spot n'envoie pas d'alerte,
+        # il est seulement affiché sur la page (voir "alertes").
+        "trajet_min": 285,
+        "alertes": False,
+        # Houle de fond atlantique, plus longue et plus puissante qu'en mer du
+        # Nord : barème de période décalé, et la plage sature quand c'est gros.
+        "seuils_houle": {
+            "h_nulle": 0.40, "h_min": 0.60, "h_pleine": 1.20,
+            "t_min": 7.0, "t_pleine": 11.0,
+            "xi_mou": 0.15, "xi_franc": 0.32,
+            "h_trop": (2.0, 3.0),
+        },
+        "pente_haute": 0.035,
+        "pente_basse": 0.010,
+        "liens": {
+            "webcam": "https://www.surf-report.com/webcams/siouville-s1079.html",
+            "previsions": "https://www.surf-forecast.com/breaks/Siouville/forecasts/latest",
         },
     },
 }
@@ -470,6 +512,12 @@ def score_houle(sp, hauteur_m, tpeak_s, direction_deg, xi=None, part_houle=None)
         points += _borne(-0.5 + (part_houle - 0.1) / 0.5, -0.5, 0.5)
     points = _borne(points, 0.0, 5.0)
 
+    # Plage qui sature : au-delà de h_trop[0], la note fond jusqu'à 20 % de
+    # sa valeur à h_trop[1]. Facultatif : sans h_trop, plus gros = mieux.
+    if s.get("h_trop"):
+        debut, fin = s["h_trop"]
+        points *= 1.0 - 0.8 * _borne((hs - debut) / (fin - debut))
+
     if hs < s["h_min"]:
         points *= (hs - s["h_nulle"]) / (s["h_min"] - s["h_nulle"])
     return max(round(points * f_dir, 2), plancher)
@@ -519,13 +567,22 @@ def score_position_maree(sp, heures_depuis_pm, duree_demi_cycle_h=6.2) -> float:
     """
     Position dans le cycle. L'optimum n'est pas au même endroit selon le
     spot : une heure APRÈS la pleine mer à Wimereux, une heure et demie
-    AVANT à Calais, qui marche au montant.
+    AVANT à Calais, qui marche au montant. pic_maree_h peut aussi être une
+    liste de pics (Siouville : 2 h avant et 2 h après) ; entre deux pics
+    voisins, la note redescend à 3 sur 5.
     """
     if duree_demi_cycle_h <= 0:
         return 1.0
     x = _borne(heures_depuis_pm / duree_demi_cycle_h, -1.0, 1.0)
-    pic = _borne(sp["pic_maree_h"] / duree_demi_cycle_h, -0.45, 0.45)
-    return round(_interp(x, sorted(ANCRAGES_MAREE + [(pic, 5.0)])), 2)
+    brut = sp["pic_maree_h"]
+    pics = sorted(_borne(p / duree_demi_cycle_h, -0.45, 0.45)
+                  for p in (brut if isinstance(brut, (list, tuple)) else [brut]))
+    # Les ancrages à 3 situés entre le premier et le dernier pic sont
+    # remplacés par un creux à 3 au milieu de chaque paire de pics.
+    ancrages = [(a, n) for a, n in ANCRAGES_MAREE if not pics[0] < a < pics[-1]]
+    ancrages += [(p, 5.0) for p in pics]
+    ancrages += [((a + b) / 2, 3.0) for a, b in zip(pics, pics[1:])]
+    return round(_interp(x, sorted(ancrages)), 2)
 
 
 def translation_m_min(dh_dt_m_h, pente) -> float:
@@ -1510,6 +1567,7 @@ def exporter_json(resultats: dict, chemin: Path, erreurs: dict | None = None,
                 "site_maree": SPOTS[cle]["site_maree"],
                 "pic_maree_h": SPOTS[cle]["pic_maree_h"],
                 "trajet_min": SPOTS[cle].get("trajet_min", 0),
+                "alertes": SPOTS[cle].get("alertes", True),
                 "duree_session_h": DUREE_SESSION_H,
                 "liens": SPOTS[cle].get("liens", {}),
                 "erreur": (erreurs or {}).get(cle),
@@ -1548,8 +1606,9 @@ def ecrire_journal(cle_spot: str, creneaux, chemin: Path) -> None:
 def afficher_console(cle_spot, creneaux, resumes, min_note):
     sp = SPOTS[cle_spot]
     aff = [c for c in creneaux if c.note_totale >= min_note]
-    pic = sp["pic_maree_h"]
-    quand = (f"PM{pic:+.1f}h" if pic else "à la pleine mer")
+    brut = sp["pic_maree_h"]
+    quand = " et ".join(f"PM{p:+.1f}h" if p else "à la pleine mer"
+                        for p in (brut if isinstance(brut, (list, tuple)) else [brut]))
     print(f"\n{'=' * 78}")
     print(f"{sp['nom'].upper()} — {len(aff)} créneau(x) de jour "
           f"| bouée {sp['bouee']} | optimum {quand} "
@@ -1597,7 +1656,7 @@ def afficher_console(cle_spot, creneaux, resumes, min_note):
 
 def main() -> int:
     p = argparse.ArgumentParser(
-        description="Prévisions de surf à Wimereux et à Calais")
+        description="Prévisions de surf à Wimereux, Calais et Siouville")
     p.add_argument("--heures", type=int, default=96)
     p.add_argument("--min-note", type=float, default=0.0)
     p.add_argument("--spot", choices=list(SPOTS), action="append",

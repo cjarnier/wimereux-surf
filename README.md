@@ -7,15 +7,17 @@ profile.
 
 Les deux spots ne se ressemblent pas et sont paramétrés séparément :
 
-| | Wimereux | Calais |
-|---|---|---|
-| Bouée de référence | Hastings (CEFAS) | Sandettie |
-| La plage regarde vers | l'ouest-nord-ouest | le nord |
-| Fenêtre de houle | 200-270° | 300-60° |
-| Optimum de marée (surf) | 1 h après la PM | 1 h 30 avant la PM |
-| Période de houle visée | 5,5 à 7,5 s | 4,5 à 6,5 s |
-| Port de marée | Boulogne-sur-Mer | Calais |
-| Trajet depuis chez toi (Wimille) | 10 min | 35 min |
+| | Wimereux | Calais | Siouville |
+|---|---|---|---|
+| Bouée de référence | Hastings (CEFAS) | Sandettie | aucune : modèle au large de la Hague |
+| La plage regarde vers | l'ouest-nord-ouest | le nord | l'ouest |
+| Fenêtre de houle | 200-270° | 300-60° | 225-315° |
+| Optimum de marée (surf) | 1 h après la PM | 1 h 30 avant la PM | 2 h avant ou après la PM |
+| Période de houle visée | 5,5 à 7,5 s | 4,5 à 6,5 s | 7 à 11 s |
+| Port de marée | Boulogne-sur-Mer | Calais | Diélette |
+| Taille où la plage sature | — | — | note en baisse de 2 à 3 m |
+| Trajet depuis chez toi (Wimille) | 10 min | 35 min | 4 h 45 |
+| Alertes | oui | oui | non, page seulement |
 
 ## Comment la note est construite
 
@@ -107,8 +109,8 @@ d'une prévision peu fiable sont plus pâles.
 3. **Vérifie les identifiants des sites de marée.** Appelle une fois
    `https://api-maree.fr/sites?key=TA_CLE` et cherche les points les plus
    proches de chaque spot. Si ce ne sont pas `boulogne-sur-mer` et `calais`,
-   ajoute des *variables* (et non des secrets) nommées `SITE_MAREE_WIMEREUX`
-   et `SITE_MAREE_CALAIS`.
+   ajoute des *variables* (et non des secrets) nommées `SITE_MAREE_WIMEREUX`,
+   `SITE_MAREE_CALAIS` et `SITE_MAREE_SIOUVILLE`.
 
 4. **Active Pages** : *Settings → Pages → Source : Deploy from a branch →
    Branch `main`, dossier `/docs`*. La page sera sur
@@ -131,10 +133,11 @@ qui distingue les deux spots :
 |---|---|
 | `point_houle`, `point_vent` | points de calcul — à garder figés |
 | `direction_houle`, `marge_direction` | fenêtre de houle et largeur de son extinction |
-| `pic_maree_h` | optimum de marée surf, en heures par rapport à la PM |
+| `pic_maree_h` | optimum de marée surf, en heures par rapport à la PM ; une liste pour plusieurs optimums |
 | `axe_offshore_surf` | direction de vent idéale pour le surf, issue de l'expérience |
 | `trajet_min` | temps pour être à l'eau, utilisé par les alertes |
-| `seuils_houle` | barème de houle propre au spot |
+| `alertes` | `False` pour un spot affiché sur la page sans jamais notifier (Siouville) |
+| `seuils_houle` | barème de houle propre au spot ; `h_trop` (facultatif) fait baisser la note quand la plage sature |
 | `pente_haute`, `pente_basse` | profil de plage, pilote Iribarren et la translation — **estimations** |
 
 Réglages communs :
