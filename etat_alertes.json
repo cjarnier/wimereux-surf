@@ -1,5 +1,10 @@
 {
- "annonces": {},
+ "annonces": {
+  "calais|chantier|2026-11-02": {
+   "note": 2.77,
+   "debut": "2026-11-02T16:00:00"
+  }
+ },
  "immediats": [],
  "surprise": "2026-10-28T14:00"
 }
