@@ -19,6 +19,14 @@
   "wimereux|surf|2026-11-20": {
    "note": 4.14,
    "debut": "2026-11-20T13:00:00"
+  },
+  "wimereux|surf|2026-11-21": {
+   "note": 4.05,
+   "debut": "2026-11-21T08:00:00"
+  },
+  "wimereux|chantier|2026-11-20": {
+   "note": 2.5,
+   "debut": "2026-11-20T13:00:00"
   }
  },
  "immediats": [],
