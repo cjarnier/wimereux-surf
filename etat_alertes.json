@@ -7,6 +7,14 @@
   "calais|surf|2026-11-25": {
    "note": 3.26,
    "debut": "2026-11-25T12:00:00"
+  },
+  "calais|chantier|2026-11-25": {
+   "note": 2.84,
+   "debut": "2026-11-25T12:00:00"
+  },
+  "calais|chantier|2026-11-26": {
+   "note": 2.88,
+   "debut": "2026-11-26T13:00:00"
   }
  },
  "immediats": [],
