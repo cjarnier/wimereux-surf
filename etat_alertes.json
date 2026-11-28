@@ -1,12 +1,12 @@
 {
  "annonces": {
-  "calais|surf|2026-11-26": {
-   "note": 3.49,
-   "debut": "2026-11-26T14:00:00"
-  },
   "wimereux|surf|2026-11-30": {
    "note": 3.2,
    "debut": "2026-11-30T16:00:00"
+  },
+  "wimereux|chantier|2026-12-01": {
+   "note": 2.46,
+   "debut": "2026-12-01T16:00:00"
   }
  },
  "immediats": [],
